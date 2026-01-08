@@ -14,7 +14,7 @@
 # License:     MIT
 
 DEFAULT_SPINNER="line"
-SPINNERS_FILE=spinners.json
+SPINNERS_FILE=./spinners.json
 
 DEBUG=false
 FRAMES=()
