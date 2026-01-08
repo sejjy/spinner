@@ -8,6 +8,8 @@
 # Author: Dave Eddy <dave@daveeddy.com>
 # Date: January 05, 2026
 # License: MIT
+#
+# Refactored with no functional changes
 
 SPINNER_PID=
 DEBUG=false
