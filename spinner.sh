@@ -1,42 +1,43 @@
 #!/usr/bin/env bash
 #
-# Run a command with an animated spinner.
+# spinner.sh: Run a command with an animated spinner. (extended)
+#
+# Dependencies:
+# 	- jq
 #
 # Spinners taken from:
 # https://github.com/sindresorhus/cli-spinners
 #
-# Author: Dave Eddy <dave@daveeddy.com>
-# Date: January 05, 2026
-# License: MIT
-#
-# Refactored with no functional changes
+# Author:      Dave Eddy <dave@daveeddy.com>
+# Extended by: Jesse Mirabel <sejjymvm@gmail.com>
+# Date:        January 08, 2026
+# License:     MIT
 
-SPINNER_PID=
+DEFAULT_SPINNER="line"
+SPINNERS_FILE=spinners.json
+
 DEBUG=false
-THEME="line"
-CHARS=
+FRAMES=()
+SPINNER_PID=
 
 usage() {
 	cat <<- EOF
-		Usage: ${0##*/} [options] <cmd>
+		USAGE: ${0##*/} [OPTIONS] <command>
 
 		Run a command with an animated spinner.
 
-		Options:
-		  -d          enable debug output
-		  -t <theme>  theme to use, default is "line"
-		  -h          print this message and exit
+		OPTIONS:
+		  -d            Enable debug mode.
+		  -s <spinner>  Specify a spinner to use. Default is "$DEFAULT_SPINNER".
+		                See $SPINNERS_FILE for a list of available spinners.
+		  -h            Print this message and exit.
 	EOF
 }
 
-spinner() {
-	local c
-	while true; do
-		for c in "${CHARS[@]}"; do
-			printf "%s\r" "$c"
-			sleep 0.2
-		done
-	done
+error() {
+	printf "\e[31m" # red
+	printf "error: %b\n\n" "$*" >&2
+	printf "\e[39m" # reset fg
 }
 
 debug() {
@@ -45,8 +46,35 @@ debug() {
 	fi
 }
 
-cleanup() {
+load_spinner() {
+	local spinner=${1:-$DEFAULT_SPINNER}
+
+	local line
+	while IFS= read -r line; do
+		FRAMES+=("$line")
+	done < <(jq -r ".$spinner.frames[]" $SPINNERS_FILE 2> /dev/null)
+
+	if ((${#FRAMES[@]} == 0)); then
+		error "unknown spinner: $spinner"
+		usage >&2
+		DEBUG=false
+		exit 1
+	fi
+}
+
+start_spinner() {
+	local c
+	while true; do
+		for c in "${FRAMES[@]}"; do
+			printf "%s\r" "$c"
+			sleep 0.2
+		done
+	done
+}
+
+stop_spinner() {
 	printf "\e[?25h" # make cursor visible
+	stty echo        # turn on echoing
 
 	if [[ -n $SPINNER_PID ]]; then
 		debug "killing spinner ($SPINNER_PID)"
@@ -56,71 +84,25 @@ cleanup() {
 	debug "finished spinner"
 }
 
-load_theme() {
-	case $1 in
-		line) CHARS=(- \\ \| /) ;;
-		dots) CHARS=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏) ;;
-		pong)
-			CHARS=(
-				"▐⠂       ▌"
-				"▐⠈       ▌"
-				"▐ ⠂      ▌"
-				"▐ ⠠      ▌"
-				"▐  ⡀     ▌"
-				"▐  ⠠     ▌"
-				"▐   ⠂    ▌"
-				"▐   ⠈    ▌"
-				"▐    ⠂   ▌"
-				"▐    ⠠   ▌"
-				"▐     ⡀  ▌"
-				"▐     ⠠  ▌"
-				"▐      ⠂ ▌"
-				"▐      ⠈ ▌"
-				"▐       ⠂▌"
-				"▐       ⠠▌"
-				"▐       ⡀▌"
-				"▐      ⠠ ▌"
-				"▐      ⠂ ▌"
-				"▐     ⠈  ▌"
-				"▐     ⠂  ▌"
-				"▐    ⠠   ▌"
-				"▐    ⡀   ▌"
-				"▐   ⠠    ▌"
-				"▐   ⠂    ▌"
-				"▐  ⠈     ▌"
-				"▐  ⠂     ▌"
-				"▐ ⠠      ▌"
-				"▐ ⡀      ▌"
-				"▐⠠       ▌"
-			)
-			;;
-		*)
-			printf "invalid theme: %s\n\n" "$THEME" >&2
-			usage >&2
-			exit 1
-			;;
-	esac
-}
-
 main() {
 	if (($# == 0)); then
 		usage >&2
 		return 1
 	fi
 
-	local opt
-	while getopts ":dht:" opt; do
+	local opt spinner
+	while getopts ":dhs:" opt; do
 		case $opt in
 			d) DEBUG=true ;;
 			h) usage; return 0 ;;
-			t) THEME=$OPTARG ;;
+			s) spinner=$OPTARG ;;
 			:)
-				printf -- "-%s requires an argument\n\n" "$OPTARG"
+				error "-$OPTARG requires an argument"
 				usage >&2
 				return 1
 				;;
 			?)
-				printf "invalid option: -%s\n\n" "$OPTARG"
+				error "invalid option: -$OPTARG"
 				usage >&2
 				return 1
 				;;
@@ -129,13 +111,15 @@ main() {
 	done
 	shift $((OPTIND - 1))
 
-	trap cleanup EXIT
-	printf "\e[?25l" # make cursor invisible
+	trap stop_spinner EXIT
 
-	load_theme "$THEME"
+	printf "\e[?25l" # make cursor invisible
+	stty -echo       # turn off echoing
+
+	load_spinner "$spinner"
 	debug "starting spinner"
 
-	spinner &
+	start_spinner &
 	SPINNER_PID=$!
 
 	debug "SPINNER_PID=$SPINNER_PID"
