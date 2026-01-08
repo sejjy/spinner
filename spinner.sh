@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 #
-# spinner.sh: Run a command with an animated spinner. (extended)
+# spinner.sh: Run a command with an animated spinner (extended).
 #
-# Dependencies:
-# 	- jq
+# Requires `jq` to extract spinners from spinners.json
 #
 # Spinners taken from:
 # https://github.com/sindresorhus/cli-spinners
@@ -49,6 +48,8 @@ debug() {
 load_spinner() {
 	local spinner=${1:-$DEFAULT_SPINNER}
 
+	debug "using \"$spinner\" spinner"
+
 	local line
 	while IFS= read -r line; do
 		FRAMES+=("$line")
@@ -57,7 +58,6 @@ load_spinner() {
 	if ((${#FRAMES[@]} == 0)); then
 		error "unknown spinner: $spinner"
 		usage >&2
-		DEBUG=false
 		exit 1
 	fi
 }
