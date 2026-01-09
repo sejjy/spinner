@@ -18,7 +18,7 @@ OPTIONS:
 
 ### References
 
-- spinner: [original script](https://github.com/bahamas10/ysap/tree/main/code/2026-01-07-spinner) |
+- spinner: [original script](https://github.com/bahamas10/ysap/blob/main/code/2026-01-07-spinner/spinner) |
   [YouTube video ↗](https://www.youtube.com/watch?v=muCcQ1W33tc)
 - [cli-spinners](https://github.com/sindresorhus/cli-spinners)
 
