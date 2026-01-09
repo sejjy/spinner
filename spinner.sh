@@ -16,6 +16,7 @@
 # License:     MIT
 
 DEFAULT_FILE=./spinners.json
+DEFAULT_INTERVAL=0.2
 DEFAULT_SPINNER="line"
 
 DEBUG=false
@@ -31,8 +32,9 @@ usage() {
 		OPTIONS:
 		  -d            Enable debug output.
 		  -f <file>     Spinner JSON file to use (default: $DEFAULT_FILE).
+		  -i <seconds>  Frame interval to use (default: $DEFAULT_INTERVAL).
 		  -l            List all spinners.
-		  -s <spinner>  Spinner to use (default: $DEFAULT_SPINNER).
+		  -s <name>     Spinner to use (default: $DEFAULT_SPINNER).
 		  -h            Print this message and exit.
 	EOF
 }
@@ -82,11 +84,15 @@ load_spinner() {
 }
 
 start_spinner() {
+	local interval=${1:-$DEFAULT_INTERVAL}
+
+	debug "using an interval of $interval"
+
 	local c
 	while true; do
 		for c in "${FRAMES[@]}"; do
 			printf "%s\r" "$c"
-			sleep 0.2
+			sleep "$interval"
 		done
 	done
 }
@@ -109,12 +115,13 @@ main() {
 		return 1
 	fi
 
-	local opt file spinner
-	while getopts ":hdf:ls:" opt; do
+	local opt file interval spinner
+	while getopts ":hdf:i:ls:" opt; do
 		case $opt in
 			h) usage; return 0 ;;
 			d) DEBUG=true ;;
 			f) file=$OPTARG ;;
+			i) interval=$OPTARG ;;
 			l) list_spinners "$file"; return 0 ;;
 			s) spinner=$OPTARG ;;
 			:)
@@ -140,7 +147,7 @@ main() {
 	load_spinner "$spinner" "$file"
 	debug "starting spinner"
 
-	start_spinner &
+	start_spinner "$interval" &
 	SPINNER_PID=$!
 
 	debug "SPINNER_PID=$SPINNER_PID"
