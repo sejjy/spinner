@@ -2,9 +2,12 @@
 #
 # spinner.sh: Run a command with an animated spinner (extended).
 #
-# Requires `jq` to extract spinners from spinners.json
+# Requires `jq` to extract spinners from the spinner JSON file.
 #
-# Spinners taken from:
+# Original script:
+# https://github.com/bahamas10/ysap/blob/main/code/2026-01-07-spinner/spinner
+#
+# Spinners:
 # https://github.com/sindresorhus/cli-spinners
 #
 # Author:      Dave Eddy <dave@daveeddy.com>
