@@ -6,9 +6,10 @@ USAGE: spinner.sh [OPTIONS] <command>
 Run a command with an animated spinner.
 
 OPTIONS:
-  -d            Enable debug mode.
-  -s <spinner>  Specify a spinner to use. Default is "line".
-                See ./spinners.json for a list of available spinners.
+  -d            Enable debug output.
+  -f <file>     Spinner JSON file to use (default: ./spinners.json).
+  -l            List all spinners.
+  -s <spinner>  Spinner to use (default: line).
   -h            Print this message and exit.
 ```
 
