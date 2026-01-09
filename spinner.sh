@@ -12,8 +12,8 @@
 # Date:        January 08, 2026
 # License:     MIT
 
+DEFAULT_FILE=./spinners.json
 DEFAULT_SPINNER="line"
-SPINNERS_FILE=./spinners.json
 
 DEBUG=false
 FRAMES=()
@@ -26,9 +26,10 @@ usage() {
 		Run a command with an animated spinner.
 
 		OPTIONS:
-		  -d            Enable debug mode.
-		  -s <spinner>  Specify a spinner to use. Default is "$DEFAULT_SPINNER".
-		                See $SPINNERS_FILE for a list of available spinners.
+		  -d            Enable debug output.
+		  -f <file>     Spinner JSON file to use (default: $DEFAULT_FILE).
+		  -l            List all spinners.
+		  -s <spinner>  Spinner to use (default: $DEFAULT_SPINNER).
 		  -h            Print this message and exit.
 	EOF
 }
@@ -45,21 +46,36 @@ debug() {
 	fi
 }
 
+list_spinners() {
+	local file=${1:-$DEFAULT_FILE}
+	debug "listing spinners from $file"
+	jq -r 'keys[]' "$file"
+}
+
 load_spinner() {
 	local spinner=${1:-$DEFAULT_SPINNER}
+	local file=${2:-$DEFAULT_FILE}
 
-	debug "using \"$spinner\" spinner"
+	debug "using $spinner spinner from $file"
 
-	local line
-	while IFS= read -r line; do
-		FRAMES+=("$line")
-	done < <(jq -r ".$spinner.frames[]" $SPINNERS_FILE 2> /dev/null)
+	local frames
+	frames=$(jq -r ".$spinner.frames[]" "$file" 2> /dev/null)
 
-	if ((${#FRAMES[@]} == 0)); then
+	local status=$?
+	if ((status == 2)); then
+		error "invalid JSON file: $file"
+		usage >&2
+		exit 1
+	elif ((status == 5)); then
 		error "unknown spinner: $spinner"
 		usage >&2
 		exit 1
 	fi
+
+	local line
+	while IFS= read -r line; do
+		FRAMES+=("$line")
+	done <<< "$frames"
 }
 
 start_spinner() {
@@ -90,11 +106,13 @@ main() {
 		return 1
 	fi
 
-	local opt spinner
-	while getopts ":dhs:" opt; do
+	local opt file spinner
+	while getopts ":hdf:ls:" opt; do
 		case $opt in
-			d) DEBUG=true ;;
 			h) usage; return 0 ;;
+			d) DEBUG=true ;;
+			f) file=$OPTARG ;;
+			l) list_spinners "$file"; return 0 ;;
 			s) spinner=$OPTARG ;;
 			:)
 				error "-$OPTARG requires an argument"
@@ -116,7 +134,7 @@ main() {
 	printf "\e[?25l" # make cursor invisible
 	stty -echo       # turn off echoing
 
-	load_spinner "$spinner"
+	load_spinner "$spinner" "$file"
 	debug "starting spinner"
 
 	start_spinner &
