@@ -6,12 +6,12 @@ USAGE: spinner.sh [OPTIONS] <command>
 Run a command with an animated spinner.
 
 OPTIONS:
-  -d            Enable debug output.
-  -f <file>     Spinner JSON file to use (default: ./spinners.json).
-  -i <seconds>  Frame interval to use (default: 0.2).
-  -l            List all spinners.
-  -s <name>     Spinner to use (default: line).
-  -h            Print this message and exit.
+  -d            Enable debug output
+  -f <file>     Spinner JSON file to use (default: ./spinners.json)
+  -i <seconds>  Frame interval to use (default: 0.2)
+  -l            List all available spinners
+  -s <name>     Spinner to use (default: line)
+  -h            Print this message and exit
 ```
 
 #

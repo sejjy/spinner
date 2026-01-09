@@ -30,12 +30,12 @@ usage() {
 		Run a command with an animated spinner.
 
 		OPTIONS:
-		  -d            Enable debug output.
-		  -f <file>     Spinner JSON file to use (default: $DEFAULT_FILE).
-		  -i <seconds>  Frame interval to use (default: $DEFAULT_INTERVAL).
-		  -l            List all spinners.
-		  -s <name>     Spinner to use (default: $DEFAULT_SPINNER).
-		  -h            Print this message and exit.
+		  -d            Enable debug output
+		  -f <file>     Spinner JSON file to use (default: $DEFAULT_FILE)
+		  -i <seconds>  Frame interval to use (default: $DEFAULT_INTERVAL)
+		  -l            List all available spinners
+		  -s <name>     Spinner to use (default: $DEFAULT_SPINNER)
+		  -h            Print this message and exit
 	EOF
 }
 
