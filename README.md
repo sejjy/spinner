@@ -1,17 +1,17 @@
 ## spinner
 
 ```
-USAGE: spinner.sh [OPTIONS] <command>
+USAGE: spinner.sh [OPTIONS] <command> [args...]
 
 Run a command with an animated spinner.
 
 OPTIONS:
-  -d            Enable debug output
-  -f <file>     Change default JSON file
-  -i <seconds>  Change default frame interval (0.2)
-  -l            List all available spinners
-  -s <name>     Change default spinner (line)
-  -h            Show this help message
+  -d             Enable debug output
+  -f <file>      Set JSON config file (default: spinners.json)
+  -i <interval>  Set frame interval in milliseconds (default: 130)
+  -l             List available spinners
+  -s <style>     Set spinner style (default: line)
+  -h             Show this help message
 ```
 
 #

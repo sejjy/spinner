@@ -2,7 +2,7 @@
 #
 # spinner.sh: Run a command with an animated spinner (extended).
 #
-# Requires `jq` to extract spinners from a JSON file.
+# Requires `jq` to extract spinners from a JSON config file.
 #
 # Original script:
 # https://github.com/bahamas10/ysap/blob/main/code/2026-01-07-spinner/spinner
@@ -15,9 +15,9 @@
 # Date:        January 08, 2026
 # License:     MIT
 
-DEFAULT_INTERVAL=0.2
-DEFAULT_JSON=./spinners.json
-DEFAULT_SPINNER="line"
+DEFAULT_JSON=spinners.json
+DEFAULT_MS=130
+DEFAULT_STYLE="line"
 
 DEBUG_OUTPUT=false
 SPINNER_FRAMES=()
@@ -25,17 +25,17 @@ SPINNER_PID=
 
 usage() {
 	cat <<- EOF
-		USAGE: ${0##*/} [OPTIONS] <command>
+		USAGE: ${0##*/} [OPTIONS] <command> [args...]
 
 		Run a command with an animated spinner.
 
 		OPTIONS:
-		  -d            Enable debug output
-		  -f <file>     Change default JSON file
-		  -i <seconds>  Change default frame interval ($DEFAULT_INTERVAL)
-		  -l            List all available spinners
-		  -s <name>     Change default spinner ($DEFAULT_SPINNER)
-		  -h            Show this help message
+		  -d             Enable debug output
+		  -f <file>      Set JSON config file (default: $DEFAULT_JSON)
+		  -i <interval>  Set frame interval in milliseconds (default: $DEFAULT_MS)
+		  -l             List available spinners
+		  -s <style>     Set spinner style (default: $DEFAULT_STYLE)
+		  -h             Show this help message
 	EOF
 }
 
@@ -74,13 +74,13 @@ list_spinners() {
 }
 
 load_spinner() {
-	local spinner=${1:-$DEFAULT_SPINNER}
+	local style=${1:-$DEFAULT_STYLE}
 	local file=${2:-$DEFAULT_JSON}
 
-	debug "loading $spinner spinner from $file"
+	debug "loading $style spinner from $file"
 
 	local output
-	output=$(jq -re ".$spinner.frames[]" "$file" 2> /dev/null)
+	output=$(jq -re ".$style.frames[]" "$file" 2> /dev/null)
 	check_status
 
 	local line
@@ -90,15 +90,20 @@ load_spinner() {
 }
 
 start_spinner() {
-	local interval=${1:-$DEFAULT_INTERVAL}
+	local interval=${1:-$DEFAULT_MS}
 
-	debug "frame interval: $interval"
+	local _s _ms secs
+	_s=$((interval / 1000))
+	_ms=$((interval % 1000))
+	secs=$_s.$(printf "%03d" $_ms)
+
+	debug "frame interval: ${interval}ms (${secs}s)"
 
 	local c
 	while true; do
 		for c in "${SPINNER_FRAMES[@]}"; do
 			printf "%s\r" "$c"
-			sleep "$interval"
+			sleep "$secs"
 		done
 	done
 }
@@ -121,7 +126,7 @@ main() {
 		return 1
 	fi
 
-	local opt file interval spinner
+	local opt file interval style
 	while getopts ":hdf:i:ls:" opt; do
 		case $opt in
 			h) usage; return 0 ;;
@@ -129,7 +134,7 @@ main() {
 			f) file=$OPTARG ;;
 			i) interval=$OPTARG ;;
 			l) list_spinners "$file"; return 0 ;;
-			s) spinner=$OPTARG ;;
+			s) style=$OPTARG ;;
 			:)
 				error "-$OPTARG requires an argument"
 				usage >&2
@@ -150,7 +155,7 @@ main() {
 	printf "\e[?25l" # make cursor invisible
 	stty -echo       # turn off echoing
 
-	load_spinner "$spinner" "$file"
+	load_spinner "$style" "$file"
 
 	debug "starting spinner"
 	start_spinner "$interval" &
