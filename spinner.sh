@@ -2,7 +2,7 @@
 #
 # spinner.sh: Run a command with an animated spinner (extended).
 #
-# Requires `jq` to extract spinners from the spinner JSON file.
+# Requires `jq` to extract spinners from a JSON file.
 #
 # Original script:
 # https://github.com/bahamas10/ysap/blob/main/code/2026-01-07-spinner/spinner
@@ -15,12 +15,12 @@
 # Date:        January 08, 2026
 # License:     MIT
 
-DEFAULT_FILE=./spinners.json
 DEFAULT_INTERVAL=0.2
+DEFAULT_JSON=./spinners.json
 DEFAULT_SPINNER="line"
 
-DEBUG=false
-FRAMES=()
+DEBUG_OUTPUT=false
+SPINNER_FRAMES=()
 SPINNER_PID=
 
 usage() {
@@ -31,66 +31,72 @@ usage() {
 
 		OPTIONS:
 		  -d            Enable debug output
-		  -f <file>     Spinner JSON file to use (default: $DEFAULT_FILE)
-		  -i <seconds>  Frame interval to use (default: $DEFAULT_INTERVAL)
+		  -f <file>     Change default JSON file
+		  -i <seconds>  Change default frame interval ($DEFAULT_INTERVAL)
 		  -l            List all available spinners
-		  -s <name>     Spinner to use (default: $DEFAULT_SPINNER)
-		  -h            Print this message and exit
+		  -s <name>     Change default spinner ($DEFAULT_SPINNER)
+		  -h            Show this help message
 	EOF
 }
 
 error() {
 	printf "\e[31m" # red
 	printf "error: %b\n\n" "$*" >&2
-	printf "\e[39m" # reset fg
+	printf "\e[39m" # reset FG
 }
 
 debug() {
-	if $DEBUG; then
+	if $DEBUG_OUTPUT; then
 		printf "[%d] %s\n" $$ "$*" >&2
 	fi
 }
 
+check_status() {
+	case $? in
+		0) return 0 ;;
+		2) error "unknown file" ;;
+		4) error "invalid JSON file" ;;
+		5) error "invalid spinner" ;;
+		*) error "unknown error" ;;
+	esac
+
+	usage >&2
+	exit 1
+}
+
 list_spinners() {
-	local file=${1:-$DEFAULT_FILE}
+	local file=${1:-$DEFAULT_JSON}
+
 	debug "listing spinners from $file"
-	jq -r 'keys[]' "$file"
+
+	jq -re "keys[]" "$file" 2> /dev/null
+	check_status
 }
 
 load_spinner() {
 	local spinner=${1:-$DEFAULT_SPINNER}
-	local file=${2:-$DEFAULT_FILE}
+	local file=${2:-$DEFAULT_JSON}
 
-	debug "using $spinner spinner from $file"
+	debug "loading $spinner spinner from $file"
 
-	local frames
-	frames=$(jq -r ".$spinner.frames[]" "$file" 2> /dev/null)
-
-	local status=$?
-	if ((status == 2)); then
-		error "invalid JSON file: $file"
-		usage >&2
-		exit 1
-	elif ((status == 5)); then
-		error "unknown spinner: $spinner"
-		usage >&2
-		exit 1
-	fi
+	local output
+	output=$(jq -re ".$spinner.frames[]" "$file" 2> /dev/null)
+	check_status
 
 	local line
 	while IFS= read -r line; do
-		FRAMES+=("$line")
-	done <<< "$frames"
+		SPINNER_FRAMES+=("$line")
+	done <<< "$output"
 }
 
 start_spinner() {
 	local interval=${1:-$DEFAULT_INTERVAL}
 
-	debug "using an interval of $interval"
+	debug "frame interval: $interval"
 
 	local c
 	while true; do
-		for c in "${FRAMES[@]}"; do
+		for c in "${SPINNER_FRAMES[@]}"; do
 			printf "%s\r" "$c"
 			sleep "$interval"
 		done
@@ -119,7 +125,7 @@ main() {
 	while getopts ":hdf:i:ls:" opt; do
 		case $opt in
 			h) usage; return 0 ;;
-			d) DEBUG=true ;;
+			d) DEBUG_OUTPUT=true ;;
 			f) file=$OPTARG ;;
 			i) interval=$OPTARG ;;
 			l) list_spinners "$file"; return 0 ;;
@@ -145,12 +151,12 @@ main() {
 	stty -echo       # turn off echoing
 
 	load_spinner "$spinner" "$file"
+
 	debug "starting spinner"
-
 	start_spinner "$interval" &
-	SPINNER_PID=$!
 
-	debug "SPINNER_PID=$SPINNER_PID"
+	SPINNER_PID=$!
+	debug "spinner PID: $SPINNER_PID"
 
 	"$@"
 }
