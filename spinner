@@ -1,28 +1,25 @@
 #!/usr/bin/env bash
 #
-# spinner: Run a command with an animated spinner (extended).
+# spinner: Run a command with an animated spinner.
 #
 # Requires `jq` to extract spinners from a JSON config file.
 #
-# Original script:
+# References:
 # https://github.com/bahamas10/ysap/blob/main/code/2026-01-07-spinner/spinner
-#
-# Spinners:
+# https://www.youtube.com/watch?v=muCcQ1W33tc
 # https://github.com/sindresorhus/cli-spinners
 #
-# Author:      Dave Eddy <dave@daveeddy.com>
-# Extended by: Jesse Mirabel <sejjymvm@gmail.com>
-# Date:        January 08, 2026
-# License:     MIT
+# Author:  Jesse Mirabel <sejjymvm@gmail.com>
+# Date:    January 08, 2026
+# License: MIT
 
 XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
 DEFAULT_JSON=$XDG_CONFIG_HOME/spinner/spinners.json
-
-DEFAULT_MS=130
 DEFAULT_STYLE="line"
-DEBUG_OUTPUT=false
+DEBUG=false
 
-SPINNER_FRAMES=()
+FRAMES=()
+INTERVAL=
 SPINNER_PID=
 
 usage() {
@@ -32,37 +29,36 @@ usage() {
 		Run a command with an animated spinner.
 
 		OPTIONS:
-		  -d             enable debug output
-		  -f <file>      set JSON config file (default: ${DEFAULT_JSON/$HOME/'~'})
-		  -i <interval>  set frame interval in milliseconds (default: $DEFAULT_MS)
-		  -l             list available spinners
-		  -s <style>     set spinner style (default: $DEFAULT_STYLE)
-		  -h             show this help message
+		  -d            enable debug output
+		  -f <file>     set JSON config file (default: ${DEFAULT_JSON/$HOME/'~'})
+		  -l            list available spinners
+		  -s <style>    set spinner style (default: $DEFAULT_STYLE)
+		  -h            show this help message
 	EOF
 }
 
 error() {
-	printf "\e[31m" # red
-	printf "error: %b\n\n" "$*" >&2
-	printf "\e[39m" # reset FG
+	# red fg
+	printf "\e[31m"
+	printf "error: %b\n" "$*" >&2
+	# reset fg
+	printf "\e[39m"
 }
 
 debug() {
-	if $DEBUG_OUTPUT; then
+	if $DEBUG; then
 		printf "[debug] %s\n" "$*" >&2
 	fi
 }
 
 check_status() {
 	case $? in
-		0) return 0 ;;
-		2) error "config file not found" ;;
-		4) error "invalid JSON config file" ;;
-		5) error "unknown spinner" ;;
-		*) error "unknown error" ;;
+		0)     return 0 ;;
+		1 | 5) error "unknown spinner" ;;
+		2)     error "config file not found" ;;
+		4)     error "invalid JSON config file" ;;
+		*)     error "unknown error" ;;
 	esac
-
-	usage >&2
 	exit 1
 }
 
@@ -79,52 +75,49 @@ load_spinner() {
 	local style=${1:-$DEFAULT_STYLE}
 	local file=${2:-$DEFAULT_JSON}
 
-	debug "loading $style spinner from $file"
-
-	local output
-	output=$(jq -re ".$style.frames[]" "$file" 2> /dev/null)
+	INTERVAL=$(jq -re ".$style.interval" "$file" 2> /dev/null)
 	check_status
 
 	local line
 	while IFS= read -r line; do
-		SPINNER_FRAMES+=("$line")
-	done <<< "$output"
+		FRAMES+=("$line")
+	done < <(jq -re ".$style.frames[]" "$file" 2> /dev/null)
+	check_status
 }
 
 start_spinner() {
-	local interval=${1:-$DEFAULT_MS}
+	local s ms secs
+	s=$((INTERVAL / 1000))
+	ms=$((INTERVAL % 1000))
+	secs=$s.$(printf "%03d" $ms)
 
-	local _s _ms secs
-	_s=$((interval / 1000))
-	_ms=$((interval % 1000))
-	secs=$_s.$(printf "%03d" $_ms)
+	debug "frame interval: ${INTERVAL}ms (${secs}s)"
 
-	debug "frame interval: ${interval}ms (${secs}s)"
-
-	local c
+	local frame
 	while true; do
-		for c in "${SPINNER_FRAMES[@]}"; do
-			printf "%s\r" "$c"
+		for frame in "${FRAMES[@]}"; do
+			printf "%s\r" "$frame"
 			sleep "$secs"
 		done
 	done
 }
 
 stop_spinner() {
-	printf "\e[?25h" # make cursor visible
-	stty echo        # turn on echoing
+	# unhide cursor and re-enable echo
+	printf "\e[?25h"
+	stty echo
 
 	if [[ -n $SPINNER_PID ]]; then
 		debug "killing spinner ($SPINNER_PID)"
 		kill $SPINNER_PID
 	fi
 
-	debug "finished spinner"
+	debug "spinner stopped"
 }
 
 main() {
 	if ! command -v jq > /dev/null; then
-		error "command not found: jq"
+		error "jq is required but not installed"
 		return 1
 	fi
 
@@ -133,13 +126,12 @@ main() {
 		return 1
 	fi
 
-	local opt file interval style
-	while getopts ":hdf:i:ls:" opt; do
+	local opt file style
+	while getopts ":hdf:ls:" opt; do
 		case $opt in
 			h) usage; return 0 ;;
-			d) DEBUG_OUTPUT=true ;;
+			d) DEBUG=true ;;
 			f) file=$OPTARG ;;
-			i) interval=$OPTARG ;;
 			l) list_spinners "$file"; return 0 ;;
 			s) style=$OPTARG ;;
 			:)
@@ -157,15 +149,20 @@ main() {
 	done
 	shift $((OPTIND - 1))
 
+	file=${file:-$DEFAULT_JSON}
+	style=${style:-$DEFAULT_STYLE}
+
 	trap stop_spinner EXIT
 
-	printf "\e[?25l" # make cursor invisible
-	stty -echo       # turn off echoing
+	# hide cursor and disable echo
+	printf "\e[?25l"
+	stty -echo
 
+	debug "loading $style spinner from $file"
 	load_spinner "$style" "$file"
 
 	debug "starting spinner"
-	start_spinner "$interval" &
+	start_spinner &
 
 	SPINNER_PID=$!
 	debug "spinner PID: $SPINNER_PID"
