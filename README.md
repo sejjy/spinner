@@ -1,4 +1,20 @@
-## spinner
+### Install
+
+1. Install [jq](https://github.com/jqlang/jq) for JSON parsing:
+
+	```bash
+	sudo pacman -S jq
+	```
+
+2. Clone the repository and run [`./install`](./install):
+
+	```bash
+	git clone https://github.com/sejjy/spinner.git && cd spinner && ./install
+	```
+
+#
+
+### Usage
 
 ```
 USAGE: spinner [OPTIONS] <command> [args...]
@@ -6,13 +22,18 @@ USAGE: spinner [OPTIONS] <command> [args...]
 Run a command with an animated spinner.
 
 OPTIONS:
-  -d             enable debug output
-  -f <file>      set JSON config file (default: ~/.config/spinner/spinners.json)
-  -i <interval>  set frame interval in milliseconds (default: 130)
-  -l             list available spinners
-  -s <style>     set spinner style (default: line)
-  -h             show this help message
+  -d            enable debug output
+  -f <file>     set JSON config file (default: ~/.config/spinner/spinners.json)
+  -l            list available spinners
+  -s <style>    set spinner style (default: line)
+  -h            show this help message
 ```
+
+#
+
+### Uninstall
+
+Run [`./uninstall`](./uninstall).
 
 #
 
