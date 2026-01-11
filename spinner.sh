@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# spinner.sh: Run a command with an animated spinner (extended).
+# spinner: Run a command with an animated spinner (extended).
 #
 # Requires `jq` to extract spinners from a JSON config file.
 #
@@ -15,11 +15,13 @@
 # Date:        January 08, 2026
 # License:     MIT
 
-DEFAULT_JSON=spinners.json
+XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
+DEFAULT_JSON=$XDG_CONFIG_HOME/spinner/spinners.json
+
 DEFAULT_MS=130
 DEFAULT_STYLE="line"
-
 DEBUG_OUTPUT=false
+
 SPINNER_FRAMES=()
 SPINNER_PID=
 
@@ -30,12 +32,12 @@ usage() {
 		Run a command with an animated spinner.
 
 		OPTIONS:
-		  -d             Enable debug output
-		  -f <file>      Set JSON config file (default: $DEFAULT_JSON)
-		  -i <interval>  Set frame interval in milliseconds (default: $DEFAULT_MS)
-		  -l             List available spinners
-		  -s <style>     Set spinner style (default: $DEFAULT_STYLE)
-		  -h             Show this help message
+		  -d             enable debug output
+		  -f <file>      set JSON config file (default: ${DEFAULT_JSON/$HOME/'~'})
+		  -i <interval>  set frame interval in milliseconds (default: $DEFAULT_MS)
+		  -l             list available spinners
+		  -s <style>     set spinner style (default: $DEFAULT_STYLE)
+		  -h             show this help message
 	EOF
 }
 
@@ -47,16 +49,16 @@ error() {
 
 debug() {
 	if $DEBUG_OUTPUT; then
-		printf "[%d] %s\n" $$ "$*" >&2
+		printf "[debug] %s\n" "$*" >&2
 	fi
 }
 
 check_status() {
 	case $? in
 		0) return 0 ;;
-		2) error "unknown file" ;;
-		4) error "invalid JSON file" ;;
-		5) error "invalid spinner" ;;
+		2) error "config file not found" ;;
+		4) error "invalid JSON config file" ;;
+		5) error "unknown spinner" ;;
 		*) error "unknown error" ;;
 	esac
 
@@ -121,6 +123,11 @@ stop_spinner() {
 }
 
 main() {
+	if ! command -v jq > /dev/null; then
+		error "command not found: jq"
+		return 1
+	fi
+
 	if (($# == 0)); then
 		usage >&2
 		return 1
