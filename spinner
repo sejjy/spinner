@@ -14,12 +14,16 @@
 # License: MIT
 
 XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
-DEFAULT_JSON=$XDG_CONFIG_HOME/spinner/spinners.json
-DEFAULT_STYLE="line"
-DEBUG=false
 
-FRAMES=()
+DEF_CONFIG=$XDG_CONFIG_HOME/spinner/spinners.json
+DEF_STYLE="line"
+
+DEBUG=false
+CONFIG=
+STYLE=
+
 INTERVAL=
+FRAMES=()
 SPINNER_PID=
 
 usage() {
@@ -30,9 +34,9 @@ usage() {
 
 		OPTIONS:
 		  -d            enable debug output
-		  -f <file>     set JSON config file (default: ${DEFAULT_JSON/$HOME/'~'})
+		  -f <file>     set JSON config file (default: ${DEF_CONFIG/$HOME/'~'})
 		  -l            list available spinners
-		  -s <style>    set spinner style (default: $DEFAULT_STYLE)
+		  -s <style>    set spinner style (default: $DEF_STYLE)
 		  -h            show this help message
 	EOF
 }
@@ -54,7 +58,7 @@ debug() {
 check_status() {
 	case $? in
 		0)     return 0 ;;
-		1 | 5) error "unknown spinner" ;;
+		1 | 5) error "unknown spinner style" ;;
 		2)     error "config file not found" ;;
 		4)     error "invalid JSON config file" ;;
 		*)     error "unknown error" ;;
@@ -63,25 +67,27 @@ check_status() {
 }
 
 list_spinners() {
-	local file=${1:-$DEFAULT_JSON}
+	local config=${CONFIG:-$DEF_CONFIG}
 
-	debug "listing spinners from $file"
+	debug "listing spinners from $config"
 
-	jq -re "keys[]" "$file" 2> /dev/null
+	jq -re "keys[]" "$config" 2> /dev/null
 	check_status
 }
 
 load_spinner() {
-	local style=${1:-$DEFAULT_STYLE}
-	local file=${2:-$DEFAULT_JSON}
+	local style=${STYLE:-$DEF_STYLE}
+	local config=${CONFIG:-$DEF_CONFIG}
 
-	INTERVAL=$(jq -re ".$style.interval" "$file" 2> /dev/null)
+	debug "loading $style spinner from $config"
+
+	INTERVAL=$(jq -re ".$style.interval" "$config" 2> /dev/null)
 	check_status
 
 	local line
 	while IFS= read -r line; do
 		FRAMES+=("$line")
-	done < <(jq -re ".$style.frames[]" "$file" 2> /dev/null)
+	done < <(jq -re ".$style.frames[]" "$config" 2> /dev/null)
 	check_status
 }
 
@@ -126,14 +132,14 @@ main() {
 		return 1
 	fi
 
-	local opt file style
+	local opt
 	while getopts ":hdf:ls:" opt; do
 		case $opt in
 			h) usage; return 0 ;;
 			d) DEBUG=true ;;
-			f) file=$OPTARG ;;
-			l) list_spinners "$file"; return 0 ;;
-			s) style=$OPTARG ;;
+			f) CONFIG=$OPTARG ;;
+			l) list_spinners; return 0 ;;
+			s) STYLE=$OPTARG ;;
 			:)
 				error "-$OPTARG requires an argument"
 				usage >&2
@@ -149,17 +155,13 @@ main() {
 	done
 	shift $((OPTIND - 1))
 
-	file=${file:-$DEFAULT_JSON}
-	style=${style:-$DEFAULT_STYLE}
-
 	trap stop_spinner EXIT
 
 	# hide cursor and disable echo
 	printf "\e[?25l"
 	stty -echo
 
-	debug "loading $style spinner from $file"
-	load_spinner "$style" "$file"
+	load_spinner
 
 	debug "starting spinner"
 	start_spinner &
