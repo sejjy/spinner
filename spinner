@@ -20,9 +20,10 @@ DEF_STYLE="line"
 
 DEBUG=false
 CONFIG=
+INTV=
 STYLE=
 
-INTERVAL=
+DEF_INTV=
 FRAMES=()
 SPINNER_PID=
 
@@ -33,11 +34,12 @@ usage() {
 		Run a command with an animated spinner.
 
 		OPTIONS:
-		  -d            enable debug output
-		  -f <file>     set JSON config file (default: ${DEF_CONFIG/$HOME/'~'})
-		  -l            list available spinners
-		  -s <style>    set spinner style (default: $DEF_STYLE)
-		  -h            show this help message
+		  -d             enable debug output
+		  -f <file>      set JSON config file (default: ${DEF_CONFIG/$HOME/'~'})
+		  -i <interval>  set frame interval in milliseconds
+		  -l             list available spinners
+		  -s <style>     set spinner style (default: $DEF_STYLE)
+		  -h             show this help message
 	EOF
 }
 
@@ -58,9 +60,9 @@ debug() {
 check_status() {
 	case $? in
 		0)     return 0 ;;
-		1 | 5) error "unknown spinner style" ;;
+		1)     error "unknown spinner style" ;;
 		2)     error "config file not found" ;;
-		4)     error "invalid JSON config file" ;;
+		4 | 5) error "invalid JSON config file" ;;
 		*)     error "unknown error" ;;
 	esac
 	exit 1
@@ -81,7 +83,7 @@ load_spinner() {
 
 	debug "loading $style spinner from $config"
 
-	INTERVAL=$(jq -re ".$style.interval" "$config" 2> /dev/null)
+	DEF_INTV=$(jq -re ".$style.interval" "$config" 2> /dev/null)
 	check_status
 
 	local line
@@ -92,12 +94,14 @@ load_spinner() {
 }
 
 start_spinner() {
+	local intv=${INTV:-$DEF_INTV}
+
 	local s ms secs
-	s=$((INTERVAL / 1000))
-	ms=$((INTERVAL % 1000))
+	s=$((intv / 1000))
+	ms=$((intv % 1000))
 	secs=$s.$(printf "%03d" $ms)
 
-	debug "frame interval: ${INTERVAL}ms (${secs}s)"
+	debug "frame interval: ${intv}ms (${secs}s)"
 
 	local frame
 	while true; do
@@ -133,11 +137,12 @@ main() {
 	fi
 
 	local opt
-	while getopts ":hdf:ls:" opt; do
+	while getopts ":hdf:i:ls:" opt; do
 		case $opt in
 			h) usage; return 0 ;;
 			d) DEBUG=true ;;
 			f) CONFIG=$OPTARG ;;
+			i) INTV=$OPTARG ;;
 			l) list_spinners; return 0 ;;
 			s) STYLE=$OPTARG ;;
 			:)

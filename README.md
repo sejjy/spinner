@@ -22,11 +22,12 @@ USAGE: spinner [OPTIONS] <command> [args...]
 Run a command with an animated spinner.
 
 OPTIONS:
-  -d            enable debug output
-  -f <file>     set JSON config file (default: ~/.config/spinner/spinners.json)
-  -l            list available spinners
-  -s <style>    set spinner style (default: line)
-  -h            show this help message
+  -d             enable debug output
+  -f <file>      set JSON config file (default: ~/.config/spinner/spinners.json)
+  -i <interval>  set frame interval in milliseconds
+  -l             list available spinners
+  -s <style>     set spinner style (default: line)
+  -h             show this help message
 ```
 
 #
