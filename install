@@ -15,7 +15,7 @@ log() {
 }
 
 main() {
-	if ! command -v jq &> /dev/null; then
+	if ! command -v jq > /dev/null; then
 		log error "jq is required but not installed."
 		return 1
 	fi

@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -e
-
 XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
 
 log() {
@@ -15,10 +13,10 @@ log() {
 
 main() {
 	log info "Removing config..."
-	rm -vrf "$XDG_CONFIG_HOME/spinner"
+	rm -vr "$XDG_CONFIG_HOME/spinner"
 
 	log info "\nRemoving binary..."
-	sudo rm -vf "/usr/bin/spinner"
+	sudo rm -v "/usr/bin/spinner"
 
 	log success "\nUninstallation complete!"
 }
