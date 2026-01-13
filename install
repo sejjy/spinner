@@ -26,7 +26,7 @@ main() {
 	mkdir -vp "$conf"
 	cp -v spinners.json "$conf/spinners.json"
 
-	local bin=/usr/bin
+	local bin=/usr/local/bin
 
 	cprintf blue "\nInstalling binary..."
 	sudo cp -v spinner "$bin/spinner"

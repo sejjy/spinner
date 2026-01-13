@@ -16,7 +16,7 @@ main() {
 	rm -vr "$XDG_CONFIG_HOME/spinner"
 
 	cprintf blue "\nRemoving binary..."
-	sudo rm -v "/usr/bin/spinner"
+	sudo rm -v "/usr/local/bin/spinner"
 
 	cprintf green "\nUninstallation complete!"
 }
