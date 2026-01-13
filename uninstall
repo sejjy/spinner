@@ -2,23 +2,23 @@
 
 XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
 
-log() {
+cprintf() {
 	case $1 in
-		success) printf "\e[32m" ;;
-		info)    printf "\e[34m" ;;
+		green) printf "\e[32m" ;;
+		blue)  printf "\e[34m" ;;
 	esac
 
 	printf "%b%b\n" "${@:2}" "\e[39m" >&2
 }
 
 main() {
-	log info "Removing config..."
+	cprintf blue "Removing config..."
 	rm -vr "$XDG_CONFIG_HOME/spinner"
 
-	log info "\nRemoving binary..."
+	cprintf blue "\nRemoving binary..."
 	sudo rm -v "/usr/bin/spinner"
 
-	log success "\nUninstallation complete!"
+	cprintf green "\nUninstallation complete!"
 }
 
 main

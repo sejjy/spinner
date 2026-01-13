@@ -4,11 +4,11 @@ set -e
 
 XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
 
-log() {
+cprintf() {
 	case $1 in
-		error)   printf "\e[31m" ;;
-		success) printf "\e[32m" ;;
-		info)    printf "\e[34m" ;;
+		red)   printf "\e[31m" ;;
+		green) printf "\e[32m" ;;
+		blue)  printf "\e[34m" ;;
 	esac
 
 	printf "%b%b\n" "${@:2}" "\e[39m" >&2
@@ -16,23 +16,23 @@ log() {
 
 main() {
 	if ! command -v jq > /dev/null; then
-		log error "jq is required but not installed."
+		cprintf red "error: jq is required but not installed."
 		return 1
 	fi
 
 	local conf=$XDG_CONFIG_HOME/spinner
 
-	log info "Installing config..."
+	cprintf blue "Installing config..."
 	mkdir -vp "$conf"
 	cp -v spinners.json "$conf/spinners.json"
 
 	local bin=/usr/bin
 
-	log info "\nInstalling binary..."
+	cprintf blue "\nInstalling binary..."
 	sudo cp -v spinner "$bin/spinner"
 	sudo chmod -v u+x "$bin/spinner"
 
-	log success "\nInstallation complete!"
+	cprintf green "\nInstallation complete!"
 	printf 'run "spinner" to see available options\n'
 }
 
