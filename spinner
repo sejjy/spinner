@@ -71,17 +71,22 @@ check_status() {
 list_spinners() {
 	local config=${CONFIG:-$DEF_CONFIG}
 
-	debug "listing spinners from $config"
+	debug "listing spinners"
+	debug "config=$config"
 
 	jq -re "keys[]" "$config" 2> /dev/null
 	check_status
+
+	debug "done"
 }
 
 load_spinner() {
 	local style=${STYLE:-$DEF_STYLE}
 	local config=${CONFIG:-$DEF_CONFIG}
 
-	debug "loading $style spinner from $config"
+	debug "loading spinner"
+	debug "config=$config"
+	debug "style=$style"
 
 	DEF_INTV=$(jq -re ".$style.interval" "$config" 2> /dev/null)
 	check_status
@@ -96,12 +101,12 @@ load_spinner() {
 start_spinner() {
 	local intv=${INTV:-$DEF_INTV}
 
+	debug "interval=$intv(ms)"
+
 	local s ms secs
 	s=$((intv / 1000))
 	ms=$((intv % 1000))
 	secs=$s.$(printf "%03d" $ms)
-
-	debug "frame interval: ${intv}ms (${secs}s)"
 
 	local frame
 	while true; do
@@ -118,7 +123,7 @@ stop_spinner() {
 	stty echo
 
 	if [[ -n $SPINNER_PID ]]; then
-		debug "killing spinner ($SPINNER_PID)"
+		debug "killing process ($SPINNER_PID)"
 		kill $SPINNER_PID
 	fi
 
@@ -172,7 +177,7 @@ main() {
 	start_spinner &
 
 	SPINNER_PID=$!
-	debug "spinner PID: $SPINNER_PID"
+	debug "process ID (PID): $SPINNER_PID"
 
 	"$@"
 }
