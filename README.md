@@ -1,16 +1,20 @@
+### Prerequisite
+
+**spinner** requires [`jq`](https://github.com/jqlang/jq) to extract spinners from [`spinners.json`](./spinners.json):
+
+```bash
+sudo pacman -S jq
+```
+
+#
+
 ### Install
 
-1. Install [jq](https://github.com/jqlang/jq) for JSON parsing:
+Clone the repository and run [`./install`](./install):
 
-	```bash
-	sudo pacman -S jq
-	```
-
-2. Clone the repository and run [`./install`](./install):
-
-	```bash
-	git clone https://github.com/sejjy/spinner.git && cd spinner && ./install
-	```
+```bash
+git clone https://github.com/sejjy/spinner.git && cd spinner && ./install
+```
 
 #
 
@@ -40,8 +44,8 @@ Run [`./uninstall`](./uninstall).
 
 ### References
 
-- spinner: [original script](https://github.com/bahamas10/ysap/blob/main/code/2026-01-07-spinner/spinner) |
-  [YouTube video ↗](https://www.youtube.com/watch?v=muCcQ1W33tc)
+- [spinner](https://github.com/bahamas10/ysap/blob/main/code/2026-01-07-spinner/spinner)
+- [Creating a Terminal Spinner in Bash! ↗](https://www.youtube.com/watch?v=muCcQ1W33tc)
 - [cli-spinners](https://github.com/sindresorhus/cli-spinners)
 
 #
