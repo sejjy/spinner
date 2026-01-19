@@ -21,11 +21,13 @@ git clone https://github.com/sejjy/spinner.git && cd spinner && ./install
 ### Usage
 
 ```
-USAGE: spinner [OPTIONS] <command> [args...]
+NAME
+  spinner - a command-line spinner.
 
-Run a command with an animated spinner.
+SYNOPSIS
+  spinner [OPTIONS] <command> [args...]
 
-OPTIONS:
+OPTIONS
   -d             enable debug output
   -f <file>      set JSON config file (default: ~/.config/spinner/spinners.json)
   -i <interval>  set frame interval in milliseconds

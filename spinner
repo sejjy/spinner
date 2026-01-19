@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-# spinner: Run a command with an animated spinner.
+# spinner: A command-line spinner.
 #
-# Requires `jq` to extract spinners from a JSON config file.
+# Requirement: jq
 #
 # References:
 # https://github.com/bahamas10/ysap/blob/main/code/2026-01-07-spinner/spinner
@@ -29,11 +29,13 @@ SPINNER_PID=
 
 usage() {
 	cat <<- EOF
-		USAGE: ${0##*/} [OPTIONS] <command> [args...]
+		NAME
+		  spinner - a command-line spinner.
 
-		Run a command with an animated spinner.
+		SYNOPSIS
+		  ${0##*/} [OPTIONS] <command> [args...]
 
-		OPTIONS:
+		OPTIONS
 		  -d             enable debug output
 		  -f <file>      set JSON config file (default: ${DEF_CONFIG/$HOME/'~'})
 		  -i <interval>  set frame interval in milliseconds
