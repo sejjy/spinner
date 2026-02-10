@@ -5,8 +5,8 @@
 # Requirement: jq
 #
 # References:
-# https://github.com/bahamas10/ysap/blob/main/code/2026-01-07-spinner/spinner
 # https://www.youtube.com/watch?v=muCcQ1W33tc
+# https://github.com/bahamas10/ysap/blob/main/code/2026-01-07-spinner/spinner
 # https://github.com/sindresorhus/cli-spinners
 #
 # Author:  Jesse Mirabel <sejjymvm@gmail.com>
@@ -46,11 +46,11 @@ usage() {
 }
 
 error() {
-	# red fg
-	printf "\e[31m"
-	printf "error: %b\n" "$*" >&2
-	# reset fg
-	printf "\e[39m"
+	{
+		printf "\e[31m"
+		printf "error: %b" "$*"
+		printf "\e[39m\n"
+	} >&2
 }
 
 debug() {
@@ -120,8 +120,9 @@ start_spinner() {
 }
 
 stop_spinner() {
-	# unhide cursor and re-enable echo
+	# make cursor visible
 	printf "\e[?25h"
+	# turn on echoing
 	stty echo
 
 	if [[ -n $SPINNER_PID ]]; then
@@ -169,8 +170,9 @@ main() {
 
 	trap stop_spinner EXIT
 
-	# hide cursor and disable echo
+	# make cursor invisible
 	printf "\e[?25l"
+	# turn off echoing
 	stty -echo
 
 	load_spinner
