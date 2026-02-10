@@ -1,24 +1,19 @@
 #!/usr/bin/env bash
 
+FG_GREEN="\e[32m"
+FG_BLUE="\e[34m"
+FG_RESET="\e[39m"
+
 XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
 
-cprintf() {
-	case $1 in
-		g) printf "\e[32m" ;;
-		b) printf "\e[34m" ;;
-	esac
-	printf "%b\n" "${@:2}" >&2
-	printf "\e[39m"
-}
-
 main() {
-	cprintf b "Removing config..."
+	printf "%bRemoving config...%b\n" "$FG_BLUE" "$FG_RESET"
 	rm -vr "$XDG_CONFIG_HOME/spinner"
 
-	cprintf b "\nRemoving binary..."
+	printf "\n%bRemoving binary...%b\n" "$FG_BLUE" "$FG_RESET"
 	sudo rm -v "/usr/local/bin/spinner"
 
-	cprintf g "\nUninstallation complete!"
+	printf "\n%bUninstallation complete!%b\n" "$FG_GREEN" "$FG_RESET"
 }
 
 main

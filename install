@@ -2,38 +2,32 @@
 
 set -e
 
-XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
+FG_RED="\e[31m"
+FG_GREEN="\e[32m"
+FG_BLUE="\e[34m"
+FG_RESET="\e[39m"
 
-cprintf() {
-	case $1 in
-		r) printf "\e[31m" ;;
-		g) printf "\e[32m" ;;
-		b) printf "\e[34m" ;;
-	esac
-	printf "%b\n" "${@:2}" >&2
-	printf "\e[39m"
-}
+XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
 
 main() {
 	if ! command -v jq > /dev/null; then
-		cprintf r "error: jq is required but not installed."
+		printf "%berror: jq is required but not installed.%b\n" "$FG_RED" "$FG_RESET"
 		return 1
 	fi
 
 	local conf=$XDG_CONFIG_HOME/spinner
 
-	cprintf b "Installing config..."
+	printf "%bInstalling config...%b\n" "$FG_BLUE" "$FG_RESET"
 	mkdir -vp "$conf"
 	cp -v spinners.json "$conf/spinners.json"
 
 	local bin=/usr/local/bin
 
-	cprintf b "\nInstalling binary..."
+	printf "\n%bInstalling binary...%b\n" "$FG_BLUE" "$FG_RESET"
 	sudo cp -v spinner "$bin/spinner"
-	sudo chmod -v u+x "$bin/spinner"
 
-	cprintf g "\nInstallation complete!"
-	printf 'run "spinner" to see available options\n'
+	printf "\n%bInstallation complete!%b\n" "$FG_GREEN" "$FG_RESET"
+	printf "run \"spinner -h\" to see available options\n"
 }
 
 main
