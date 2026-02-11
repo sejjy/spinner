@@ -10,7 +10,13 @@ sudo pacman -S jq
 
 ### Install
 
-Clone the repository and run [`./install`](./install):
+```bash
+git clone https://github.com/sejjy/spinner.git
+cd spinner
+./install
+```
+
+Or
 
 ```bash
 git clone https://github.com/sejjy/spinner.git && cd spinner && ./install
@@ -40,14 +46,16 @@ OPTIONS
 
 ### Uninstall
 
-Run [`./uninstall`](./uninstall).
+```bash
+./uninstall
+```
 
 #
 
 ### References
 
-- [spinner](https://github.com/bahamas10/ysap/blob/main/code/2026-01-07-spinner/spinner)
 - [Creating a Terminal Spinner in Bash! ↗](https://www.youtube.com/watch?v=muCcQ1W33tc)
+- [spinner](https://github.com/bahamas10/ysap/blob/main/code/2026-01-07-spinner/spinner)
 - [cli-spinners](https://github.com/sindresorhus/cli-spinners)
 
 #
