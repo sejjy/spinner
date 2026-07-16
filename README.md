@@ -15,7 +15,7 @@ A command-line spinner
 
 ### Requirements
 
-- [jq](https://archlinux.org/packages/extra/x86_64/jq/) -- Command-line JSON processor
+- [jq](https://archlinux.org/packages/extra/x86_64/jq/): Command-line JSON processor
 
 #
 
@@ -41,18 +41,18 @@ git clone https://github.com/sejjy/spinner.git && cd spinner && ./install
 
 ```
 NAME
-  spinner - a command-line spinner.
+  spinner - a command-line spinner
 
 SYNOPSIS
   spinner [OPTIONS] <command> [args...]
 
 OPTIONS
-  -d             enable debug output
-  -f <file>      set JSON config file (default: ~/.config/spinner/spinners.json)
+  -d             enable debug mode
+  -f <file>      set config file (default: ~/.config/spinner/spinners.json)
   -i <interval>  set frame interval in milliseconds
-  -l             list available spinners
+  -l             list all spinner styles
   -s <style>     set spinner style (default: line)
-  -h             show this help message
+  -h             show usage
 ```
 
 #
@@ -60,5 +60,5 @@ OPTIONS
 ### References
 
 - [Creating a Terminal Spinner in Bash! (video) ↗](https://www.youtube.com/watch?v=muCcQ1W33tc)
-- [cli-spinners](https://github.com/sindresorhus/cli-spinners)
 - [spinner](https://github.com/bahamas10/ysap/blob/main/code/2026-01-07-spinner/spinner)
+- [cli-spinners](https://github.com/sindresorhus/cli-spinners)

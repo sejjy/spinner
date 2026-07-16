@@ -30,18 +30,18 @@ PID=
 usage() {
 	cat <<- EOF
 		NAME
-		  spinner - a command-line spinner.
+		  spinner - a command-line spinner
 
 		SYNOPSIS
 		  ${0##*/} [OPTIONS] <command> [args...]
 
 		OPTIONS
-		  -d             enable debug output
-		  -f <file>      set JSON config file (default: ${DEF_CONFIG/$HOME/'~'})
+		  -d             enable debug mode
+		  -f <file>      set config file (default: ${DEF_CONFIG/$HOME/'~'})
 		  -i <interval>  set frame interval in milliseconds
-		  -l             list available spinners
+		  -l             list all spinner styles
 		  -s <style>     set spinner style (default: $DEF_STYLE)
-		  -h             show this help message
+		  -h             show usage
 	EOF
 }
 
