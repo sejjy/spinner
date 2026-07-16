@@ -11,23 +11,23 @@ XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
 
 main() {
 	if ! command -v jq > /dev/null; then
-		printf "%berror: jq is required but not installed.%b\n" "$FG_RED" "$FG_RESET"
+		printf "%berror: jq is required but not installed%b\n" "$FG_RED" "$FG_RESET"
 		return 1
 	fi
 
-	local conf=$XDG_CONFIG_HOME/spinner
+	local conf="$XDG_CONFIG_HOME/spinner"
 
-	printf "%bInstalling config...%b\n" "$FG_BLUE" "$FG_RESET"
+	printf "%bCopying config...%b\n" "$FG_BLUE" "$FG_RESET"
 	mkdir -vp "$conf"
 	cp -v spinners.json "$conf/spinners.json"
 
 	local bin=/usr/local/bin
 
-	printf "\n%bInstalling binary...%b\n" "$FG_BLUE" "$FG_RESET"
+	printf "\n%bCopying binary...%b\n" "$FG_BLUE" "$FG_RESET"
 	sudo cp -v spinner "$bin/spinner"
 
 	printf "\n%bInstallation complete!%b\n" "$FG_GREEN" "$FG_RESET"
-	printf "run \"spinner -h\" to see available options\n"
+	printf "run 'spinner -h' to see available options\n"
 }
 
 main

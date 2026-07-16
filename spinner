@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-# spinner: A command-line spinner.
+# spinner: A command-line spinner
 #
-# Requirement: jq
+# Requirements: jq
 #
 # References:
 # https://www.youtube.com/watch?v=muCcQ1W33tc
@@ -15,17 +15,17 @@
 
 XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
 
-DEF_CONFIG=$XDG_CONFIG_HOME/spinner/spinners.json
+DEF_CONFIG="$XDG_CONFIG_HOME/spinner/spinners.json"
 DEF_STYLE="line"
 
 DEBUG=false
 CONFIG=
-INTV=
+INTERVAL=
 STYLE=
 
-DEF_INTV=
+DEF_INTERVAL=
 FRAMES=()
-SPINNER_PID=
+PID=
 
 usage() {
 	cat <<- EOF
@@ -90,7 +90,7 @@ load_spinner() {
 	debug "config=$config"
 	debug "style=$style"
 
-	DEF_INTV=$(jq -re ".$style.interval" "$config" 2> /dev/null)
+	DEF_INTERVAL=$(jq -re ".$style.interval" "$config" 2> /dev/null)
 	check_status
 
 	local line
@@ -101,13 +101,16 @@ load_spinner() {
 }
 
 start_spinner() {
-	local intv=${INTV:-$DEF_INTV}
+	printf "\e[?25l" # make cursor invisible
+	stty -echo       # turn off echoing
 
-	debug "interval=$intv(ms)"
+	local interval=${INTERVAL:-$DEF_INTERVAL}
+
+	debug "interval=$interval(ms)"
 
 	local s ms secs
-	s=$((intv / 1000))
-	ms=$((intv % 1000))
+	s=$((interval / 1000))
+	ms=$((interval % 1000))
 	secs=$s.$(printf "%03d" $ms)
 
 	local frame
@@ -120,14 +123,12 @@ start_spinner() {
 }
 
 stop_spinner() {
-	# make cursor visible
-	printf "\e[?25h"
-	# turn on echoing
-	stty echo
+	printf "\e[?25h" # make cursor visible
+	stty echo        # turn on echoing
 
-	if [[ -n $SPINNER_PID ]]; then
-		debug "killing process ($SPINNER_PID)"
-		kill $SPINNER_PID
+	if [[ -n $PID ]]; then
+		debug "killing process ($PID)"
+		kill $PID
 	fi
 
 	debug "spinner stopped"
@@ -150,7 +151,7 @@ main() {
 			h) usage; return 0 ;;
 			d) DEBUG=true ;;
 			f) CONFIG=$OPTARG ;;
-			i) INTV=$OPTARG ;;
+			i) INTERVAL=$OPTARG ;;
 			l) list_spinners; return 0 ;;
 			s) STYLE=$OPTARG ;;
 			:)
@@ -170,18 +171,13 @@ main() {
 
 	trap stop_spinner EXIT
 
-	# make cursor invisible
-	printf "\e[?25l"
-	# turn off echoing
-	stty -echo
-
 	load_spinner
 
 	debug "starting spinner"
 	start_spinner &
 
-	SPINNER_PID=$!
-	debug "process ID (PID): $SPINNER_PID"
+	PID=$!
+	debug "process ID (PID): $PID"
 
 	"$@"
 }
